@@ -1,0 +1,33 @@
+# Global Settings
+namespace: hospital-system
+
+# Application App Config
+app:
+  replicaCount: 1
+  image:
+    repository: hospitalmanagement/hospital-app-backend
+    tag: "v1.0.0"
+  config:
+    nodeEnv: "production"
+    port: 5000
+  secrets:
+    sessionSecret: "hospital-secret-key-2024-change-this-in-production"
+    jwtSecret: "jwt-secret-key-hospital-2024-change-this-in-production"
+    adminUsername: "admin"
+    adminPassword: "admin123"
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 5000
+
+# MongoDB Database Config
+mongodb:
+  replicas: 1
+  image:
+    repository: mongo
+    tag: "6.0"
+  service:
+    port: 27017
+  persistence:
+    storageClass: "gp3"
+    size: "10Gi"

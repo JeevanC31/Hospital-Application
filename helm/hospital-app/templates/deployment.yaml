@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hospital-app.fullname" . }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "hospital-app.fullname" . }}-app
+  template:
+    metadata:
+      labels:
+        app: {{ include "hospital-app.fullname" . }}-app
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.app.config.port }}
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hospital-app.fullname" . }}-config
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hospital-app.fullname" . }}-config
+                  key: PORT
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "hospital-app.fullname" . }}-config
+                  key: MONGO_URI
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hospital-app.fullname" . }}-secrets
+                  key: SESSION_SECRET
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hospital-app.fullname" . }}-secrets
+                  key: JWT_SECRET
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hospital-app.fullname" . }}-secrets
+                  key: ADMIN_USERNAME
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hospital-app.fullname" . }}-secrets
+                  key: ADMIN_PASSWORD
+          livenessProbe:
+            httpGet:
+              path: /api/admin/session-status
+              port: {{ .Values.app.config.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/admin/session-status
+              port: {{ .Values.app.config.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10

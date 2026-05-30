@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hospital-app.fullname" . }}-mongodb
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: {{ include "hospital-app.fullname" . }}-mongodb-service
+  replicas: {{ .Values.mongodb.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "hospital-app.fullname" . }}-mongodb
+  template:
+    metadata:
+      labels:
+        app: {{ include "hospital-app.fullname" . }}-mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.mongodb.service.port }}
+              name: mongodb
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: "/data/db"
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.mongodb.persistence.storageClass | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.mongodb.persistence.size | quote }}

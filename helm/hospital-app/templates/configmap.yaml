@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hospital-app.fullname" . }}-config
+  namespace: {{ .Values.namespace }}
+data:
+  NODE_ENV: {{ .Values.app.config.nodeEnv | quote }}
+  PORT: {{ .Values.app.config.port | quote }}
+  MONGO_URI: "mongodb://{{ include "hospital-app.fullname" . }}-mongodb-service:{{ .Values.mongodb.service.port }}/hospital_management"
